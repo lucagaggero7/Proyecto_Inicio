@@ -4,6 +4,7 @@ using Inicio.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Inicio.Shared.DTO;
+using AutoMapper;
 
 namespace Inicio.Server.Controllers
 {
@@ -12,11 +13,13 @@ namespace Inicio.Server.Controllers
     [Route("api/Titulos")]
     public class TitulosControllers : ControllerBase
     {
-
         private readonly Context context;
-        public TitulosControllers(Context context)
+        private readonly IMapper mapper;
+
+        public TitulosControllers(Context context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet]
@@ -61,9 +64,11 @@ namespace Inicio.Server.Controllers
         {
             try
             {
-                Titulo entidad = new Titulo();
-                entidad.Codigo = entidadDTO.Codigo;
-                entidad.Nombre = entidadDTO.Nombre;
+                //Titulo entidad = new Titulo();
+                //entidad.Codigo = entidadDTO.Codigo;
+                //entidad.Nombre = entidadDTO.Nombre;
+
+                Titulo entidad = mapper.Map<Titulo>(entidadDTO);
 
 
                 context.Titulos.Add(entidad);

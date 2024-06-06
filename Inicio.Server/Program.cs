@@ -25,7 +25,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<Context>(op => op.UseSqlServer("name=conn"));
 
+//---------------------------------------------------------------------------
+//agregar el automapper
 
+builder.Services.AddAutoMapper(typeof(Program));
 
 //-------------------------------------------------------------------------
 //constructor de la aplicacion
