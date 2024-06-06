@@ -1,7 +1,9 @@
 ﻿using Inicio.DB.Data.Entity;
 using Inicio.DB.Data;
+using Inicio.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Inicio.Shared.DTO;
 
 namespace Inicio.Server.Controllers
 {
@@ -55,10 +57,15 @@ namespace Inicio.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> Post(Titulo entidad)
+        public async Task<ActionResult<int>> Post(CrearTituloDTO entidadDTO)
         {
             try
             {
+                Titulo entidad = new Titulo();
+                entidad.Codigo = entidadDTO.Codigo;
+                entidad.Nombre = entidadDTO.Nombre;
+
+
                 context.Titulos.Add(entidad);
                 await context.SaveChangesAsync();
                 return entidad.Id;
@@ -66,7 +73,7 @@ namespace Inicio.Server.Controllers
             catch (Exception e)
             {
 
-                return BadRequest(e.Message);
+                return BadRequest(e.InnerException.Message);
             }
         }
 

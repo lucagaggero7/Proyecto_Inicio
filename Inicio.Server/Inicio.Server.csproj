@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Inicio.DB\Inicio.DB.csproj" />
+    <ProjectReference Include="..\Inicio.Shared\Inicio.Shared.csproj" />
   </ItemGroup>
 
 </Project>
