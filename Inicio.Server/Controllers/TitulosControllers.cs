@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Inicio.Shared.DTO;
 using AutoMapper;
+using Inicio.Server.Repositorio;
 
 namespace Inicio.Server.Controllers
 {
@@ -13,50 +14,50 @@ namespace Inicio.Server.Controllers
     [Route("api/Titulos")]
     public class TitulosControllers : ControllerBase
     {
-        private readonly Context context;
+        private readonly ITituloRepositorio repositorio;
         private readonly IMapper mapper;
 
-        public TitulosControllers(Context context, IMapper mapper)
+        public TitulosControllers(ITituloRepositorio repositorio, IMapper mapper)
         {
-            this.context = context;
+            this.repositorio = repositorio;
             this.mapper = mapper;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<Titulo>>> Get()
         {
-            return await context.Titulos.ToListAsync();
+            return await repositorio.Select();
         }
 
         [HttpGet("{id:int}")] //api/Titulos/2
         public async Task<ActionResult<Titulo>> Get(int id)
         {
-            Titulo? Verif = await context.Titulos.FirstOrDefaultAsync(x => x.Id == id);
+
+            Titulo? Verif = await repositorio.SelectById(id);
 
             if (Verif == null)
             {
                 return NotFound();
             }
             return Verif;
+        }
+        
+        [HttpGet("GetByCod/{cod}")] //api/Titulos/GetByCod/DNI
+        public async Task<ActionResult<Titulo>> GetByCod(string cod)
+        {
+            Titulo? pepe = await repositorio.SelectByCod(cod);
+            if (pepe == null)
+            {
+                return NotFound();
+            }
+            return pepe;
         }
 
         [HttpGet("existe/{id:int}")]
         public async Task<ActionResult<bool>> Existe(int id)
         {
-            var existe = await context.Titulos.AnyAsync(x => x.Id == id);
+            var existe = await repositorio.Existe(id);
             return existe;
-        }
-
-        [HttpGet("GetByCod/{cod}")] //api/Titulos/DNI
-        public async Task<ActionResult<Titulo>> GetByCod(string cod)
-        {
-            Titulo? Verif = await context.Titulos.FirstOrDefaultAsync(x => x.Codigo == cod);
-
-            if (Verif == null)
-            {
-                return NotFound();
-            }
-            return Verif;
         }
 
         [HttpPost]
@@ -64,16 +65,9 @@ namespace Inicio.Server.Controllers
         {
             try
             {
-                //Titulo entidad = new Titulo();
-                //entidad.Codigo = entidadDTO.Codigo;
-                //entidad.Nombre = entidadDTO.Nombre;
-
                 Titulo entidad = mapper.Map<Titulo>(entidadDTO);
 
-
-                context.Titulos.Add(entidad);
-                await context.SaveChangesAsync();
-                return entidad.Id;
+                return await repositorio.Insert(entidad);
             }
             catch (Exception e)
             {
@@ -89,7 +83,7 @@ namespace Inicio.Server.Controllers
             {
                 return BadRequest("Datos Incorrectos");
             }
-            var Verif = await context.Titulos.Where(e => e.Id == id).FirstOrDefaultAsync();
+            var Verif = await repositorio.SelectById(id);
 
             if (Verif == null)
             {
@@ -102,8 +96,7 @@ namespace Inicio.Server.Controllers
 
             try
             {
-                context.Titulos.Update(Verif);
-                await context.SaveChangesAsync();
+                await repositorio.Update(id, Verif);
                 return Ok();
             }
             catch (Exception e)
@@ -117,18 +110,22 @@ namespace Inicio.Server.Controllers
         [HttpDelete("{id:int}")] //api/Titulos/2
         public async Task<ActionResult> Delete(int id)
         {
-            var existe = await context.Titulos.AnyAsync(x => x.Id == id);
+            var existe = await repositorio.Existe(id);
 
             if (!existe)
             {
                 return NotFound($"El tipo de documento {id} no existe.");
             }
-            Titulo EntidadABorrar = new Titulo();
-            EntidadABorrar.Id = id;
 
-            context.Remove(EntidadABorrar);
-            await context.SaveChangesAsync();
-            return Ok();
+            if (await repositorio.Delete(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
         }
 
     

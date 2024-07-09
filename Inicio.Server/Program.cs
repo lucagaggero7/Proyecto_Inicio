@@ -1,4 +1,5 @@
 using Inicio.DB.Data;
+using Inicio.Server.Repositorio;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -31,6 +32,11 @@ builder.Services.AddDbContext<Context>(op => op.UseSqlServer("name=conn"));
 builder.Services.AddAutoMapper(typeof(Program));
 
 //-------------------------------------------------------------------------
+//Inyectamos la clase titulo repositorio
+
+builder.Services.AddScoped<ITituloRepositorio, TituloRepositorio>();
+//-------------------------------------------------------------------------
+
 //constructor de la aplicacion
 var app = builder.Build();
 
