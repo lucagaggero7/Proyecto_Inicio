@@ -35,6 +35,11 @@ builder.Services.AddAutoMapper(typeof(Program));
 //Inyectamos la clase titulo repositorio
 
 builder.Services.AddScoped<ITituloRepositorio, TituloRepositorio>();
+
+//-------------------------------------------------------------------------
+//Inyectamos la clase tipo de documento repositorio
+builder.Services.AddScoped<ITDocumentoRepositorio, TDocumentoRepositorio>();
+
 //-------------------------------------------------------------------------
 
 //constructor de la aplicacion

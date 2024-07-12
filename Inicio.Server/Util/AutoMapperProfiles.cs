@@ -9,6 +9,8 @@ namespace Inicio.Server.Util
         public AutoMapperProfiles()
         {
             CreateMap<CrearTituloDTO, Titulo>();
+
+            CreateMap<ModificarTituloDTO, Titulo>();
         }
     }
 }

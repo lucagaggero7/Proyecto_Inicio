@@ -1,8 +1,11 @@
 ﻿using Inicio.DB.Data;
 using Inicio.DB.Data.Entity;
+using Inicio.Server.Repositorio;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Identity.Client;
 
 namespace Inicio.Server.Controllers
 {
@@ -11,25 +14,38 @@ namespace Inicio.Server.Controllers
 
     public class TDocumentosControllers : ControllerBase
     {
+        private readonly ITDocumentoRepositorio repositorio;
 
-        private readonly Context context;
-        public TDocumentosControllers(Context context)
+        public TDocumentosControllers(ITDocumentoRepositorio repositorio)
         {
-            this.context = context;
+            this.repositorio = repositorio;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<TDocumento>>> Get()
         {
-            return await context.TDocumentos.ToListAsync();
+            return await repositorio.Select();
         }
 
         [HttpGet("{id:int}")] //api/TDocumentos/2
         public async Task<ActionResult<TDocumento>> Get(int id)
         {
-            TDocumento? Verif = await context.TDocumentos.FirstOrDefaultAsync(x=> x.Id == id);
+            TDocumento? Verif = await repositorio.SelectById(id);
 
             if(Verif == null)
+            {
+                return NotFound();
+            }
+            return Verif;
+        }
+
+        
+        [HttpGet("GetByCod/{cod}")] //api/TDocumentos/DNI
+        public async Task<ActionResult<TDocumento>> GetByCod(string cod)
+        {
+            TDocumento? Verif = await repositorio.SelectByCod(cod);
+
+            if (Verif == null)
             {
                 return NotFound();
             }
@@ -39,20 +55,8 @@ namespace Inicio.Server.Controllers
         [HttpGet("existe/{id:int}")]
         public async Task<ActionResult<bool>> Existe(int id)
         {
-            var existe = await context.TDocumentos.AnyAsync(x => x.Id == id);
-            return existe;
-        }
-
-        [HttpGet("GetByCod/{cod}")] //api/TDocumentos/DNI
-        public async Task<ActionResult<TDocumento>> GetByCod(string cod)
-        {
-            TDocumento? Verif = await context.TDocumentos.FirstOrDefaultAsync(x => x.Codigo == cod);
-
-            if (Verif == null)
-            {
-                return NotFound();
-            }
-            return Verif;
+           return await repositorio.Existe(id);
+           
         }
 
         [HttpPost]
@@ -60,9 +64,7 @@ namespace Inicio.Server.Controllers
         {
             try
             {
-                context.TDocumentos.Add(entidad);
-                await context.SaveChangesAsync();
-                return entidad.Id;
+                return await repositorio.Insert(entidad);
             }
             catch (Exception e)
             {
@@ -74,26 +76,20 @@ namespace Inicio.Server.Controllers
         [HttpPut("{id:int}")] //api/TDocumentos/2
         public async Task<ActionResult> Put(int id, [FromBody]TDocumento entidad)
         {
-            if (id != entidad.Id)
-            {
-                return BadRequest("Datos Incorrectos");
-            }
-            var Verif = await context.TDocumentos.Where(e=> e.Id == id).FirstOrDefaultAsync();
-
-            if (Verif == null)
-            {
-                return NotFound("No existe el Tipo de Documento Buscado");
-            }
-
-            Verif.Codigo = entidad.Codigo;
-            Verif.Nombre = entidad.Nombre;
-            Verif.Activo = entidad.Activo;
-
             try
             {
-                context.TDocumentos.Update(Verif);
-                await context.SaveChangesAsync();
+                if (id != entidad.Id)
+                {
+                    return BadRequest("Datos Incorrectos");
+                }
+                var Verif = await repositorio.Update(id, entidad);
+
+                if (!Verif)
+                {
+                    return BadRequest("No se pudo actualizar el tipo de documento");
+                }
                 return Ok();
+
             }
             catch (Exception e)
             {
@@ -106,17 +102,11 @@ namespace Inicio.Server.Controllers
         [HttpDelete("{id:int}")] //api/TDocumentos/2
         public async Task<ActionResult> Delete(int id)
         {
-            var existe = await context.TDocumentos.AnyAsync(x => x.Id == id);
-
-            if(!existe)
+            var resp = await repositorio.Delete(id);
+            if (!resp)
             {
-                return NotFound($"El tipo de documento {id} no existe.");
+                return BadRequest("El tipo de documento no se pudo borrar");
             }
-            TDocumento EntidadABorrar = new TDocumento();
-            EntidadABorrar.Id = id;
-
-            context.Remove(EntidadABorrar);
-            await context.SaveChangesAsync();
             return Ok();
         }
 

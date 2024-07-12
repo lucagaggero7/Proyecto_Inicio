@@ -45,12 +45,12 @@ namespace Inicio.Server.Controllers
         [HttpGet("GetByCod/{cod}")] //api/Titulos/GetByCod/DNI
         public async Task<ActionResult<Titulo>> GetByCod(string cod)
         {
-            Titulo? pepe = await repositorio.SelectByCod(cod);
-            if (pepe == null)
+            Titulo? Verif = await repositorio.SelectByCod(cod);
+            if (Verif == null)
             {
                 return NotFound();
             }
-            return pepe;
+            return Verif;
         }
 
         [HttpGet("existe/{id:int}")]
@@ -77,31 +77,26 @@ namespace Inicio.Server.Controllers
         }
 
         [HttpPut("{id:int}")] //api/Titulos/2
-        public async Task<ActionResult> Put(int id, [FromBody] Titulo entidad)
+        public async Task<ActionResult> Put(int id, [FromBody] ModificarTituloDTO entidadDTO)
         {
-            if (id != entidad.Id)
-            {
-                return BadRequest("Datos Incorrectos");
-            }
-            var Verif = await repositorio.SelectById(id);
-
-            if (Verif == null)
-            {
-                return NotFound("No existe el Tipo de Documento Buscado");
-            }
-
-            Verif.Codigo = entidad.Codigo;
-            Verif.Nombre = entidad.Nombre;
-            Verif.Activo = entidad.Activo;
-
             try
             {
-                await repositorio.Update(id, Verif);
+                Titulo entidad = mapper.Map<Titulo>(entidadDTO);
+                if (id != entidad.Id)
+                {
+                    return BadRequest("Datos Incorrectos");
+                }
+                var Verif = await repositorio.Update(id, entidad);
+
+                if (!Verif)
+                {
+                    return BadRequest("No se pudo actualizar el titulo");
+                }
                 return Ok();
+
             }
             catch (Exception e)
             {
-
                 return BadRequest(e.Message);
             }
         }

@@ -4,21 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inicio.Server.Repositorio
 {
-    public class TituloRepositorio : Repositorio<Titulo>, ITituloRepositorio
+    public class TDocumentoRepositorio : Repositorio<TDocumento>, ITDocumentoRepositorio
     {
         private readonly Context context;
 
-        public TituloRepositorio(Context context) : base(context)
+        public TDocumentoRepositorio(Context context) : base(context)
         {
             this.context = context;
         }
 
-        public async Task<Titulo> SelectByCod(string cod)
+        public async Task<TDocumento> SelectByCod(string cod)
         {
-            Titulo? Verif = await context.Titulos
+            TDocumento? Verif = await context.TDocumentos
                              .FirstOrDefaultAsync(x => x.Codigo == cod);
             return Verif;
         }
-
     }
 }
