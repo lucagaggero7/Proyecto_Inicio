@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Inicio.DB\Inicio.DB.csproj" />
+    <ProjectReference Include="..\Inicio.Shared\Inicio.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

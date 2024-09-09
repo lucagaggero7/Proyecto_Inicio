@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Inicio.Client.Servicios
 {
-    public class HttpServicio
+    public class HttpServicio : IHttpServicio
     {
         private readonly HttpClient http;
 
@@ -29,7 +29,7 @@ namespace Inicio.Client.Servicios
         private async Task<T> DesSereailzar<T>(HttpResponseMessage response)
         {
             var respuestaStr = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(respuestaStr, 
+            return JsonSerializer.Deserialize<T>(respuestaStr,
                 new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         }
     }
