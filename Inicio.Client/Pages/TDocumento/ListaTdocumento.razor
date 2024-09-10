@@ -10,20 +10,30 @@
         <th>Codigo</th>
         <th>Nombre</th>
     </tr>
-
-    @if (listaDocumentos == null)
+    @if(Mensaje=="")
     {
-        <p>Buscando....</p>
+        @if (listaDocumentos == null)
+        {
+            <p>Buscando....</p>
+        }
+        else if(listaDocumentos.Count == 0)
+        {
+            <p>No existen tipos de documentos</p>
+        }
+        else
+        {
+            @foreach (var item in listaDocumentos)
+            {
+                <tr>
+                    <td>@item.Codigo</td>
+                    <td>@item.Nombre</td>
+                </tr>
+            }        
+        }
     }
     else
     {
-         @foreach (var item in listaDocumentos)
-    {
-        <tr>
-            <td>@item.Codigo</td>
-            <td>@item.Nombre</td>
-        </tr>
-    }        
+        <p> Error: @Mensaje</p>
     }
 </table>
 
@@ -46,7 +56,7 @@
         }
         else
         {
-            Mensaje = "Error";
+            Mensaje = await resp.ObtenerError();
         }
     }
 
