@@ -1,8 +1,6 @@
 ﻿@page "/api/TDocumentos"
 @inject IHttpServicio http
-@inject IJSRuntime JSRuntime
 @inject NavigationManager navigationManager
-
 <h3>Lista de tipos de documento</h3>
 
 @if (!string.IsNullOrEmpty(mensaje))
@@ -15,46 +13,67 @@
 <a class="btn btn-primary" href="/api/TDocumentos/crear">Nuevo tipo de documento</a>
 <br />
 
-@if (!string.IsNullOrEmpty(Mensaje))
-{
-    <div class="alert alert-success" role="alert">
-        @Mensaje
-    </div>
-}
 
 <table class="table table-striped" style="border-spacing: 0; width: 100%; table-layout: fixed;">
     <!-- Fija el ancho de la tabla -->
     <tr>
-        <th style="padding: 4px; width: 20%;">Codigo</th>
-        <th style="padding: 4px; width: 70%;">Nombre</th>
-        <th style="padding: 4px; width: 10%;">Acciones</th>
+        <th style="padding: 4px; width: 20%;">Codigo</th> <!-- Reducir ancho -->
+        <th style="padding: 4px; width: 70%;">Nombre</th> <!-- Aumentar ancho de la columna nombre -->
+        <th style="padding: 4px; width: 10%;">Acciones</th> <!-- Mantener espacio pequeño para acciones -->
     </tr>
-    @if (listaDocumentos == null)
+    @if (Mensaje == "")
     {
-        <p>Buscando....</p>
-    }
-    else if (listaDocumentos.Count == 0)
-    {
-        <p>No existen tipos de documentos</p>
+        @if (listaDocumentos == null)
+        {
+            <p>Buscando....</p>
+        }
+        else if (listaDocumentos.Count == 0)
+        {
+            <p>No existen tipos de documentos</p>
+        }
+        else
+        {
+            @foreach (var item in listaDocumentos)
+            {
+                <tr>
+                    <td style="padding: 4px;">@item.Codigo</td>
+                    <td style="padding: 4px;">@item.Nombre</td>
+                    <td style="padding: 4px; width: 1%;">
+                        <div style="display: flex; justify-content: center;">
+                            <a class="btn btn-primary btn-sm" href="api/TDocumentos/editar/@item.Id">Editar</a> <!-- Botón compacto -->
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
     }
     else
     {
-        @foreach (var item in listaDocumentos)
-        {
-            <tr>
-                <td style="padding: 4px;">@item.Codigo</td>
-                <td style="padding: 4px;">@item.Nombre</td>
-                <td style="padding: 4px; width: 1%;">
-                    <div style="display: flex; justify-content: center;">
-                        <a class="btn btn-primary btn-sm" href="api/TDocumentos/editar/@item.Id">Editar</a>
-                    </div>
-                </td>
-            </tr>
-        }
+        <p>Error: @Mensaje</p>
     }
 </table>
 
 @code {
+    List<TDocumento> listaDocumentos;
+    string Mensaje = "";
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        var resp = await http.Get<List<TDocumento>>("api/TDocumentos");
+        if (!resp.Error)
+        {
+            listaDocumentos = resp.Respuesta;
+        }
+        else
+        {
+            Mensaje = await resp.ObtenerError();
+        }
+    }
     private string mensaje;
 
     protected override void OnInitialized()
@@ -77,32 +96,5 @@
             }
         }
         return null;
-    }
-    List<TDocumento> listaDocumentos;
-    string Mensaje = "";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await Leer();
-    }
-
-    private async Task Leer()
-    {
-        // Recuperar el mensaje de localStorage
-        Mensaje = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "notificationMessage");
-        // Eliminar el mensaje de localStorage después de recuperarlo
-        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "notificationMessage");
-
-        // Obtener la lista de documentos
-        var resp = await http.Get<List<TDocumento>>("api/TDocumentos");
-        if (!resp.Error)
-        {
-            listaDocumentos = resp.Respuesta;
-        }
-        else
-        {
-            Mensaje = await resp.ObtenerError();
-        }
     }
 }
