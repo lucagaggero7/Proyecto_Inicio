@@ -36,6 +36,9 @@
     <button class="btn btn-secondary" @onclick="Cancelar"> Cancelar</button>
 </EditForm>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="js/script.js"></script>
+
 @code {
     [Parameter] public int tDocumentoId { get; set; }
     private TDocumento tDocumento = new TDocumento();
@@ -76,7 +79,9 @@
         }
 
         isLoading = false;
-        navigationManager.NavigateTo($"api/TDocumentos?mensaje=Registro%20Modificado");
+        
+        navigationManager.NavigateTo("api/TDocumentos");
+        await JSRuntime.InvokeVoidAsync("mostrarAlerta", "Registro Modificado");
     }
 
 
