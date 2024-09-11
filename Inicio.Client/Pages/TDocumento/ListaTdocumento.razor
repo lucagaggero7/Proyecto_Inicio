@@ -1,8 +1,16 @@
 ﻿@page "/api/TDocumentos"
 @inject IHttpServicio http
 @inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
 
 <h3>Lista de tipos de documento</h3>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success" role="alert">
+        @mensaje
+    </div>
+}
 <br />
 <a class="btn btn-primary" href="/api/TDocumentos/crear">Nuevo tipo de documento</a>
 <br />
@@ -47,6 +55,29 @@
 </table>
 
 @code {
+    private string mensaje;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        var uri = new Uri(navigationManager.Uri);
+        var query = uri.Query;
+        mensaje = GetQueryParameter(query, "mensaje");
+    }
+
+    private string GetQueryParameter(string query, string key)
+    {
+        var queryParameters = query.TrimStart('?').Split('&');
+        foreach (var parameter in queryParameters)
+        {
+            var pair = parameter.Split('=');
+            if (pair.Length == 2 && pair[0] == key)
+            {
+                return Uri.UnescapeDataString(pair[1]);
+            }
+        }
+        return null;
+    }
     List<TDocumento> listaDocumentos;
     string Mensaje = "";
 

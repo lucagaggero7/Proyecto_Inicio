@@ -65,6 +65,7 @@
         isLoading = true;
         StateHasChanged();
 
+        // Simulamos una carga de 3 segundos antes de ejecutar el método grabar
         await Task.Delay(3000);
 
         var httpRespuesta = await http.Put<TDocumento>($"api/TDocumentos/{tDocumentoId}", tDocumento);
@@ -75,10 +76,10 @@
         }
 
         isLoading = false;
-        // Guardar mensaje en localStorage
-        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "notificationMessage", "Registro actualizado");
-        navigationManager.NavigateTo("/api/TDocumentos");
+        navigationManager.NavigateTo($"api/TDocumentos?mensaje=Registro%20Modificado");
     }
+
+
 
     private void Cancelar()
     {
