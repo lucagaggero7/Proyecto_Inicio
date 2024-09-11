@@ -13,7 +13,6 @@
 <a class="btn btn-primary" href="/api/TDocumentos/crear">Nuevo tipo de documento</a>
 <br />
 
-
 <table class="table table-striped" style="border-spacing: 0; width: 100%; table-layout: fixed;">
     <!-- Fija el ancho de la tabla -->
     <tr>
@@ -41,6 +40,7 @@
                     <td style="padding: 4px; width: 1%;">
                         <div style="display: flex; justify-content: center;">
                             <a class="btn btn-primary btn-sm" href="api/TDocumentos/editar/@item.Id">Editar</a> <!-- Botón compacto -->
+                            <a class="btn btn-danger btn-sm" @onclick="() => Eliminar(item.Id)">Eliminar</a> <!-- Botón de eliminar -->
                         </div>
                     </td>
                 </tr>
@@ -55,6 +55,9 @@
 
 @code {
     List<TDocumento> listaDocumentos;
+    [Parameter] public int tDocumentoId { get; set; }
+    private TDocumento tDocumento = new TDocumento();
+
     string Mensaje = "";
     protected override async Task OnInitializedAsync()
     {
@@ -74,27 +77,18 @@
             Mensaje = await resp.ObtenerError();
         }
     }
+
+    private async Task Eliminar(int id)
+    {
+        var response = await http.Delete($"api/TDocumentos/{id}", tDocumento);
+        await Leer(); // Recargar la lista de documentos
+    }
+
+
     private string mensaje;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        var uri = new Uri(navigationManager.Uri);
-        var query = uri.Query;
-        mensaje = GetQueryParameter(query, "mensaje");
-    }
-
-    private string GetQueryParameter(string query, string key)
-    {
-        var queryParameters = query.TrimStart('?').Split('&');
-        foreach (var parameter in queryParameters)
-        {
-            var pair = parameter.Split('=');
-            if (pair.Length == 2 && pair[0] == key)
-            {
-                return Uri.UnescapeDataString(pair[1]);
-            }
-        }
-        return null;
     }
 }
