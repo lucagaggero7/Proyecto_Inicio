@@ -1,6 +1,7 @@
 ﻿@page "/api/TDocumentos/crear";
 @inject IHttpServicio http
 @inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
 
 <h3>Nuevo tipo de documento</h3>
 
@@ -21,22 +22,42 @@
         </div>
     </div>
     <br />
-    <button class="btn btn-primary" type="submit"> Aceptar</button>
+    <button class="btn btn-primary" type="submit" disabled="@isLoading">
+        @if (isLoading)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Cargando..</span>
+        }
+        else
+        {
+            <span>Aceptar</span>
+        }
+    </button>
     <button class="btn btn-secondary" @onclick="Cancelar"> Cancelar</button>
     
 </EditForm>
 
 @code {
     private TDocumento tDocumento = new TDocumento();
+    private bool isLoading = false;
 
     private async Task Grabar()
     {
+        isLoading = true;
+        StateHasChanged();
+
+        // Simulamos una carga de 3 segundos antes de ejecutar el método grabar
+        await Task.Delay(3000);
+
         var httpRespuesta = await http.Post<TDocumento>("api/TDocumentos", tDocumento);
         if(httpRespuesta.Error)
         {
             var body = httpRespuesta.HttpResponseMessage;
         }
-        navigationManager.NavigateTo("/api/TDocumentos");
+         isLoading = false;
+
+        navigationManager.NavigateTo("api/TDocumentos");
+        await JSRuntime.InvokeVoidAsync("mostrarAlerta", "Documento Creado");
 
     }
 

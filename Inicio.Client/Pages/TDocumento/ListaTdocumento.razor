@@ -2,6 +2,7 @@
 @inject IHttpServicio http
 @inject NavigationManager navigationManager
 @inject IJSRuntime js
+
 <h3>Lista de tipos de documento</h3>
 
 @if (!string.IsNullOrEmpty(mensaje))
@@ -40,9 +41,28 @@
                     <td style="padding: 4px;">@item.Nombre</td>
                     <td style="padding: 4px; width: 1%;">
                         <div style="display: flex; justify-content: center;">
-                            <a class="btn btn-primary btn-md" href="api/TDocumentos/editar/@item.Id" style="margin-right: 10px;">Editar</a> <!-- Botón tamaño mediano con margen -->
-                            <a class="btn btn-danger btn-md" @onclick="() => ConfirmarEliminar(item.Id)" style="margin-left: 10px;">Eliminar</a> <!-- Botón tamaño mediano con margen -->
+                            <a class="btn btn-primary btn-md" href="api/TDocumentos/editar/@item.Id" style="margin-right: 10px; width: 120px;">
+                                Editar
+                            </a>
+
+                            <a class="btn @($"btn-danger {(isLoading.ContainsKey(item.Id) && isLoading[item.Id] ? "disabled" : "")}")"
+                               type="button"
+                               disabled="@(isLoading.ContainsKey(item.Id) && isLoading[item.Id])"
+                               @onclick="() => ConfirmarEliminar(item.Id)"
+                               style="width: 120px; display: flex; justify-content: center; align-items: center; min-width: 150px; padding: 6px 10px;">
+                                @if (isLoading.ContainsKey(item.Id) && isLoading[item.Id])
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span style="margin-left: 5px;">Eliminando...</span>
+                                }
+                                else
+                                {
+                                    <span>Eliminar</span>
+                                }
+                            </a>
+
                         </div>
+
                     </td>
                 </tr>
             }
@@ -58,6 +78,7 @@
     List<TDocumento> listaDocumentos;
     [Parameter] public int tDocumentoId { get; set; }
     private TDocumento tDocumento = new TDocumento();
+    private Dictionary<int, bool> isLoading = new Dictionary<int, bool>();  // Controlar el estado de carga para cada botón
 
     string Mensaje = "";
     protected override async Task OnInitializedAsync()
@@ -86,7 +107,6 @@
         public bool? isDismissed { get; set; }
     }
 
-
     private async Task ConfirmarEliminar(int id)
     {
         var result = await js.InvokeAsync<SwalResult>("Swal.fire", new
@@ -103,18 +123,24 @@
 
         if (result != null && result.isConfirmed == true)
         {
-            Console.WriteLine("Confirmación recibida, eliminando...");
+            isLoading[id] = true;  // Cambiar el estado a "cargando" solo para el botón correspondiente
+            StateHasChanged(); // Forzar la actualización de la UI
+
+            await Task.Delay(3000);  // Simular un proceso de carga durante 3 segundos
+
+            // Llamada a la función de eliminación
             await Eliminar(id);
+
+            isLoading[id] = false;  // Restaurar el estado del botón
+            StateHasChanged(); // Actualizar la UI
+
+            await js.InvokeVoidAsync("mostrarAlerta", "Documento Eliminado");
         }
         else
         {
             Console.WriteLine("Eliminación cancelada.");
         }
     }
-
-
-
-
 
     private async Task Eliminar(int id)
     {
@@ -123,9 +149,5 @@
     }
 
     private string mensaje;
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
 }
+
