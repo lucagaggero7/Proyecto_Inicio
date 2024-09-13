@@ -44,7 +44,6 @@
                             <a class="btn btn-primary btn-md" href="api/TDocumentos/editar/@item.Id" style="margin-right: 10px; width: 120px;">
                                 Editar
                             </a>
-
                             <a class="btn @($"btn-danger {(isLoading.ContainsKey(item.Id) && isLoading[item.Id] ? "disabled" : "")}")"
                                type="button"
                                disabled="@(isLoading.ContainsKey(item.Id) && isLoading[item.Id])"
