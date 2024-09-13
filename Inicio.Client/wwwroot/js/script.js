@@ -1,5 +1,4 @@
 ﻿
-
 function mostrarAlerta(mensaje) {
     Swal.fire({
         title: 'Éxito',
