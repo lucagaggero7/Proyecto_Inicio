@@ -2,6 +2,7 @@
 @inject IHttpServicio http
 @inject NavigationManager navigationManager
 @inject IJSRuntime js
+@inject AlertaServicio Alerta
 
 <h3>Lista de tipos de documento</h3>
 
@@ -48,7 +49,7 @@
                             <a class="btn @($"btn-danger {(isLoading.ContainsKey(item.Id) && isLoading[item.Id] ? "disabled" : "")}")"
                                type="button"
                                disabled="@(isLoading.ContainsKey(item.Id) && isLoading[item.Id])"
-                               @onclick="() => ConfirmarEliminar(item.Id)"
+                               @onclick="() => Eliminar(item.Id)"
                                style="width: 120px; display: flex; justify-content: center; align-items: center; min-width: 150px; padding: 6px 10px;">
                                 @if (isLoading.ContainsKey(item.Id) && isLoading[item.Id])
                                 {
@@ -107,32 +108,35 @@
         public bool? isDismissed { get; set; }
     }
 
-    private async Task ConfirmarEliminar(int id)
+    private async Task Eliminar(int id)
     {
-        var result = await js.InvokeAsync<SwalResult>("Swal.fire", new
-        {
-            title = "¿Está seguro?",
-            text = "¡No podrás revertir esto!",
-            icon = "warning",
-            showCancelButton = true,
-            confirmButtonColor = "#3085d6",
-            cancelButtonColor = "#d33",
-            confirmButtonText = "Sí, eliminarlo!",
-            cancelButtonText = "Cancelar"
-        });
+        // Desparramado como aprendi yo
+        // var result = await js.InvokeAsync<SwalResult>("Swal.fire", new
+        // {
+        //     title = "¿Está seguro?",
+        //     text = "¡No podrás revertir esto!",
+        //     icon = "warning",
+        //     showCancelButton = true,
+        //     confirmButtonColor = "#3085d6",
+        //     cancelButtonColor = "#d33",
+        //     confirmButtonText = "Sí, eliminarlo!",
+        //     cancelButtonText = "Cancelar"
+        // });
+
+        //Metodo escalable con la logica separada 
+        var result = await Alerta.ConfirmDeletion("¿Está seguro?", "¡No podrás revertir esto!");
 
         if (result != null && result.isConfirmed == true)
         {
-            isLoading[id] = true;  // Cambiar el estado a "cargando" solo para el botón correspondiente
-            StateHasChanged(); // Forzar la actualización de la UI
+            isLoading[id] = true; 
+            StateHasChanged(); //Actualizar ui
 
-            await Task.Delay(3000);  // Simular un proceso de carga durante 3 segundos
+            await Task.Delay(3000); 
 
-            // Llamada a la función de eliminación
-            await Eliminar(id);
+            await Borrar(id);
 
-            isLoading[id] = false;  // Restaurar el estado del botón
-            StateHasChanged(); // Actualizar la UI
+            isLoading[id] = false;  //Restaura el estado del botón
+            StateHasChanged();
 
             await js.InvokeVoidAsync("mostrarAlerta", "Documento Eliminado");
         }
@@ -142,9 +146,13 @@
         }
     }
 
-    private async Task Eliminar(int id)
+    private async Task Borrar(int id)
     {
-        var response = await http.Delete($"api/TDocumentos/{id}", tDocumento);
+        var respuesta = await http.Delete($"api/TDocumentos/{id}", tDocumento);
+        if(respuesta.Error)
+        {
+            var body = "No se pudo borrar";
+        }
         await Leer(); // Recargar la lista de documentos
     }
 

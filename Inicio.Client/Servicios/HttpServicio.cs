@@ -56,52 +56,23 @@ namespace Inicio.Client.Servicios
             var enviarContent = new StringContent(enviarJson, Encoding.UTF8, "application/json");
 
             var response = await http.PutAsync(url, enviarContent);
-            try
-            {
-                response = await http.PutAsync(url, enviarContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var respuesta = await DesSereailzar<object>(response);
-                    return new HttpRespuesta<object>(respuesta, false, response);
+                    //var respuesta = await DesSereailzar<object>(response);
+                    return new HttpRespuesta<object>(null, false, response);
                 }
                 else
                 {
                     return new HttpRespuesta<object>(default, true, response);
                 }
-            }
-            catch (Exception)
-            {
-                // Manejo de excepciones
-                return new HttpRespuesta<object>(default, true, response);
-            }
         }
 
         public async Task<HttpRespuesta<object>> Delete<T>(string url, T entidad)
         {
-            var enviarJson = JsonSerializer.Serialize(entidad);
-            var enviarContent = new StringContent(enviarJson, Encoding.UTF8, "application/json");
+            var respuesta = await http.DeleteAsync(url);
 
-            var response = await http.DeleteAsync(url);
-            try
-            {
-                response = await http.DeleteAsync(url);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var respuesta = await DesSereailzar<object>(response);
-                    return new HttpRespuesta<object>(respuesta, false, response);
-                }
-                else
-                {
-                    return new HttpRespuesta<object>(default, true, response);
-                }
-            }
-            catch (Exception)
-            {
-                // Manejo de excepciones
-                return new HttpRespuesta<object>(default, true, response);
-            }
+            return new HttpRespuesta<object>(null, !respuesta.IsSuccessStatusCode, respuesta);
         }
 
 

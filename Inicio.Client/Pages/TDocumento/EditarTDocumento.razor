@@ -44,6 +44,8 @@
     private TDocumento tDocumento = new TDocumento();
     private bool isLoading = false;
 
+    string doc = "";
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -68,14 +70,17 @@
         isLoading = true;
         StateHasChanged();
 
-        // Simulamos una carga de 3 segundos antes de ejecutar el método grabar
+        // Simulamos una carga de 3 segundos antes de ejecutar el metodo
         await Task.Delay(3000);
+
+        //tDocumento.Personas = new List<Persona>();
+        //esta linea la usa el profe para mandar la lista vacia que es required
+        //en mi caso borre la lista personas de la base de datos al inicio.
 
         var httpRespuesta = await http.Put<TDocumento>($"api/TDocumentos/{tDocumentoId}", tDocumento);
         if (httpRespuesta.Error)
         {
             var body = httpRespuesta.HttpResponseMessage;
-            // Manejar errores aquí si es necesario
         }
 
         isLoading = false;
